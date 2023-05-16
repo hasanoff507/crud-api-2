@@ -31,9 +31,8 @@ const [empData,setEmpdata]= useState()
   const columns = [
     {
       title: 'Object Type',
-      dataIndex: 'Object Type',
-      key: 'Object Type',
-      render: (text: string) => <a>{text}</a>,
+      dataIndex: 'object Type',
+      key: 'object Type',
     },
     {
         title: 'Name',
