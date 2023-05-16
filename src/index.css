@@ -1,0 +1,41 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+:where(.css-dev-only-do-not-override-15rg2km).ant-layout.ant-layout-has-sider{
+  height: 100vh !important;
+}
+
+h2 {
+  display: block;
+  font-size: 1.5em;
+  margin-block-start: 0;
+  margin-block-end: 0;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  font-weight: bold;
+}
+.ant-form-item{
+  margin-bottom: 0;
+}
+.ant-form{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+:where(.css-dev-only-do-not-override-15rg2km).ant-modal .ant-modal-footer .ant-btn+.ant-btn:not(.ant-dropdown-trigger) {
+display: none;
+}
+:where(.css-dev-only-do-not-override-15rg2km).ant-btn-default{
+  display: none;
+}
