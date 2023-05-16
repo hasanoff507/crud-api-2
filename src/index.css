@@ -39,3 +39,11 @@ display: none;
 :where(.css-dev-only-do-not-override-15rg2km).ant-btn-default{
   display: none;
 }
+.edit__icons{
+  background: fixed;
+  border: none;
+  cursor: pointer;
+}
+.ant-input >.ant__inpu-all{
+  width: 150% !important;
+}
