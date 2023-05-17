@@ -5,7 +5,7 @@ import Home from '../Home';
 
 const { Header, Content, Footer, Sider } = Layout;
 
-const App: React.FC = () => {
+const SidebarMenu: React.FC = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -53,4 +53,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default SidebarMenu;
