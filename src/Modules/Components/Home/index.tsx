@@ -11,11 +11,12 @@ type Props = {
 };
 
 interface EmployeeData {
-  id: string;
+  id: number;
   objectType: string;
   name: string;
   displayName: string;
   command: string;
+  objectTypeId:string
 }
 interface ObjectType {
   objectId: string;
@@ -27,15 +28,20 @@ const Home: React.FC<Props> = ({ }: Props) => {
   //Modal Open and Close
   const [isModalOpen, setIsModalOpen] = useState(false);
   //Post and Get data
-  const [empData, setEmpdata] = useState<EmployeeData[]>([]);
+  const [empData, setEmpdata] = useState<any[]>([]);
   //Object Type Name Option
   const [entity, setEntety] = useState<any[]>([])
   //Edit Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   //Get Table Object Type
-  const [objecrtypetable, setObjecrtypetable] = useState<ObjectType[]>([]);
+  const [objectTypeTable, setObjectTypeTable] = useState<ObjectType[]>([]);
+  //Post Exute Data
+  const [exutePostData, setExutePostData] = useState(false);
+  //Exute
+  const [exutePost, setExuteData] = useState();
+  const [exuteId, setExuteId] = useState<any>();
 
-  console.log(objecrtypetable);
+console.log(empData);
 
   // delete function is running
   const handleDelete = (id: string) => {
@@ -93,8 +99,7 @@ const Home: React.FC<Props> = ({ }: Props) => {
       });
   };
   //Edit Data
-   //Edit Data
-   const onFinishEdit = (values: any) => {
+  const onFinishEdit = (values: any) => {
     const payload = {
       name: values.name,
       displayName: values.displayName,
@@ -124,7 +129,37 @@ const Home: React.FC<Props> = ({ }: Props) => {
         console.log("Error saving data:", error);
       });
   };
+//Exute Data
+const onExuteDataFinish = (values: any) => {
+  const payload = {
+    name: values.name,
+    objectId: exuteId
+  };
 
+
+
+  fetch(`${Urls}/Transforms/execute`, {
+    method: 'POST',
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+    .then((res) => {
+      if (res.ok) {
+        return res.json();
+      } else {
+        throw new Error("Failed to save data.");
+      }
+    })
+    .then((data) => {
+      console.log("Data saved successfully:", data);
+      handleCancel(); // Close the modal
+      setExuteData(data);
+      // window.location.reload();
+    })
+    .catch((error) => {
+      console.log("Error saving data:", error);
+    });
+};
   // Get All Transforms
   useEffect(() => {
     fetch(`${Urls}/Transforms/all`)
@@ -137,6 +172,19 @@ const Home: React.FC<Props> = ({ }: Props) => {
         console.log(err.message);
       })
   }, [])
+  // Get Object Types Table
+  useEffect(() => {
+    fetch("http://localhost:9020/Object/get-object-type/e6029540-39df-4b30-8de9-771587372578")
+      .then((res) => {
+        return res.json()
+      })
+      .then((resp) => {
+        setObjectTypeTable(resp);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, []);
 
   //GetObject Types
   useEffect(() => {
@@ -151,28 +199,12 @@ const Home: React.FC<Props> = ({ }: Props) => {
       })
   }, [])
 
-  //Get Object Types Table
-  useEffect(() => {
-    fetch(`${Urls}/Object/get-object-type/9b2a351d-dd66-48f2-b702-41e3cfe3bb3e`)
-      .then((res) => {
-        return res.json()
-      })
-      .then((resp) => {
-        setObjecrtypetable(resp);
-      }).catch((err) => {
-        console.log(err.message);
-      })
-  }, [])
 
   const columns = [
     {
       title: 'Object Type',
-      dataIndex: 'object Type',
-      key: 'object Type',
-      render: (text: any) => {
-        const objectType = objecrtypetable[text];
-        return objectType ? objectType.name : '';
-      }
+      dataIndex: 'objectType',
+      key: 'objectType',
     },
     {
       title: 'Name',
@@ -195,13 +227,48 @@ const Home: React.FC<Props> = ({ }: Props) => {
       key: 'Edit',
       render: (text: any, record: any) => (
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button className="edit__icons">
+          <button className="edit__icons" onClick={()=>showExutedata(record.objectTypeId)}>
             <CaretRightOutlined style={{ color: 'blue', fontSize: "30px" }} />
           </button>
+          <Modal title="Exucute Transform" open={exutePostData} onOk={handleExuteDataOk} onCancel={handleExuteCancel}>
+            <Form
+              name="basic"
+              labelCol={{ span: 8 }}
+              wrapperCol={{ span: 16 }}
+              style={{ maxWidth: 600 }}
+              initialValues={{ remember: true }}
+              onFinish={onExuteDataFinish}
+              onFinishFailed={onFinishFailed}
+              autoComplete="off"
+            >
+              <Form.Item
+                name="name"
+                rules={[{ required: true, message: 'Please input your username!' }]}
+              >
+                <Input placeholder='Name' style={{ width: '150%' }} />
+              </Form.Item>
+
+              {/* <Form.Item
+                name="displayName"
+                rules={[{ required: true, message: 'Please input your password!' }]}
+              >
+                <Input placeholder='Display Name' style={{ width: '150%' }} />
+              </Form.Item> */}
+              <h5 style={{ fontFamily: 'Roboto', fontSize: '14px', color: 'red' }}>File Name can be without file extension . File name is case sensitive</h5>
+              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                <Button type="primary" htmlType="submit" style={{ position: 'absolute', right: '0' }}>
+                  Exucute
+                </Button>
+                <Button type="link" onClick={handleEditCancel} style={{ position: 'absolute', right: '100px', color: 'blue' }}>
+                  Cansel
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
           <button className="edit__icons" onClick={showEditModal}>
             <EditIcon sx={{ color: 'orange' }} />
           </button>
-          <Modal title="Basic Modal" open={isEditModalOpen} onOk={handleEditOk} onCancel={handleEditCancel}>
+          <Modal title="Edit Transform" open={isEditModalOpen} onOk={handleEditOk} onCancel={handleEditCancel}>
             <Form
               name="basic"
               labelCol={{ span: 8 }}
@@ -225,11 +292,12 @@ const Home: React.FC<Props> = ({ }: Props) => {
               >
                 <Input placeholder='Display Name' style={{ width: '150%' }} />
               </Form.Item>
+              <h5 style={{ fontFamily: 'Roboto', fontSize: '14px', color: 'red' }}>File Name can be without file extension . File name is case sensitive</h5>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button type="primary" htmlType="submit" style={{ position: 'absolute', right: '0' }}>
                   Edit
                 </Button>
-                <Button type="link" onClick={handleCancel} htmlType="submit" style={{ position: 'absolute', right: '100px', color: 'blue' }}>
+                <Button type="link" onClick={handleEditCancel} style={{ position: 'absolute', right: '100px', color: 'blue' }}>
                   Cansel
                 </Button>
               </Form.Item>
@@ -247,7 +315,6 @@ const Home: React.FC<Props> = ({ }: Props) => {
   const showEditModal = () => {
     setIsEditModalOpen(true);
   };
-
   const handleEditOk = () => {
     setIsEditModalOpen(false);
   };
@@ -268,7 +335,19 @@ const Home: React.FC<Props> = ({ }: Props) => {
     setIsModalOpen(false);
   };
 
+  const showExutedata = (id:any) => {
+    setExuteId(id)
+    console.log(id);
+    
+    setExutePostData(true)
+  }
+  const handleExuteDataOk = () => {
+    setExutePostData(false);
+  };
 
+  const handleExuteCancel = () => {
+    setExutePostData(false);
+  };
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
@@ -289,22 +368,7 @@ const Home: React.FC<Props> = ({ }: Props) => {
           alignItems: 'center',
           gap: "15px"
         }}>
-          <Form
-            name="basic"
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 16 }}
-            style={{ maxWidth: 600 }}
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-          >
-            <Form.Item name="Search">
-              <Input style={{
-                width: 500,
-              }} />
-            </Form.Item>
-          </Form>
+          <input type="search" style={{ padding: '7px', width: '500px' }} />
           <div onClick={showModal} style={{
             background: '#3B3573',
             padding: '6px 9px 6px 9px',
