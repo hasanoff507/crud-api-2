@@ -247,20 +247,13 @@ const onExuteDataFinish = (values: any) => {
               >
                 <Input placeholder='Name' style={{ width: '150%' }} />
               </Form.Item>
-
-              {/* <Form.Item
-                name="displayName"
-                rules={[{ required: true, message: 'Please input your password!' }]}
-              >
-                <Input placeholder='Display Name' style={{ width: '150%' }} />
-              </Form.Item> */}
               <h5 style={{ fontFamily: 'Roboto', fontSize: '14px', color: 'red' }}>File Name can be without file extension . File name is case sensitive</h5>
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button type="primary" htmlType="submit" style={{ position: 'absolute', right: '0' }}>
                   Exucute
                 </Button>
-                <Button type="link" onClick={handleEditCancel} style={{ position: 'absolute', right: '100px', color: 'blue' }}>
-                  Cansel
+                <Button type="link" onClick={handleExuteCancel} style={{ position: 'absolute', right: '100px', color: 'blue' }}>
+                  Cancel
                 </Button>
               </Form.Item>
             </Form>
@@ -298,7 +291,7 @@ const onExuteDataFinish = (values: any) => {
                   Edit
                 </Button>
                 <Button type="link" onClick={handleEditCancel} style={{ position: 'absolute', right: '100px', color: 'blue' }}>
-                  Cansel
+                  Cancel
                 </Button>
               </Form.Item>
             </Form>
@@ -354,9 +347,14 @@ const onExuteDataFinish = (values: any) => {
   };
 
 
-  const handleChange = (value: string) => {
+
+  const handleChange = (value: string, option: any) => {
+    const { key, children } = option;
     console.log(`selected ${value}`);
+    console.log(`ID: ${key}, Name: ${children}`);
   };
+  
+ 
 
 
   return (
@@ -394,11 +392,11 @@ const onExuteDataFinish = (values: any) => {
                 <Select
                   placeholder='Entity'
                   style={{ width: 470 }}
-                  onChange={handleChange}
+                  onChange={(value, option) => handleChange(value, option)}
                 >
                   {entity &&
                     entity.map((e: any) => (
-                      <Option key={e.objectId} value={e.name}>
+                      <Option  key={e.objectId} value={e.name}>
                         {e.name}
                       </Option>
                     ))}
@@ -429,7 +427,7 @@ const onExuteDataFinish = (values: any) => {
                   Submit
                 </Button>
                 <Button type="link" onClick={handleCancel} htmlType="submit" style={{ position: 'absolute', right: '100px', color: 'blue' }}>
-                  Cansel
+                  Cancel
                 </Button>
               </Form.Item>
             </Form>
