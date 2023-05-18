@@ -135,17 +135,16 @@ const Home: React.FC<Props> = ({ }: Props) => {
   // Exute Data
   const onExecuteDataFinish = (values: any) => {
     console.log(values);
-    const payload = {
-      firstname: values.Firstname, // Update with the actual field name in the form
-      objectId: exuteId,
-      passportnumber: values.Passportnumber,
-      lastname: values.Lastname
-    };
-
+    
+    Object.keys(values).forEach(function(key, index) {
+      return {
+        [key]: values[key]
+      }
+    });
     fetch(`${Urls}/Transforms/execute`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...values, objectId: exuteId, name: ""}),
     })
       .then((res) => {
         if (res.ok) {
@@ -164,6 +163,9 @@ const Home: React.FC<Props> = ({ }: Props) => {
         console.log('Error saving data:', error);
       });
   };
+
+  
+  
 
   // Get All Transforms
   useEffect(() => {
