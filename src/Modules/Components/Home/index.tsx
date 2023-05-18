@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Urls } from '../../../Api';
-import { Button, Checkbox, Form, Input, Modal, Select, Table } from 'antd';
+import { Button, Checkbox, Form, Input, Modal, Select, Spin, Table } from 'antd';
 import { PlusOutlined } from '@ant-design/icons'
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { CaretRightOutlined } from '@ant-design/icons';
 import EditIcon from '@mui/icons-material/Edit';
 import { DeleteFilled } from '@ant-design/icons';
+import TextArea from 'antd/es/input/TextArea';
 type Props = {
 
 };
@@ -16,7 +17,7 @@ interface EmployeeData {
   name: string;
   displayName: string;
   command: string;
-  objectTypeId:string
+  objectTypeId: string
 }
 interface ObjectType {
   objectId: string;
@@ -38,10 +39,12 @@ const Home: React.FC<Props> = ({ }: Props) => {
   //Post Exute Data
   const [exutePostData, setExutePostData] = useState(false);
   //Exute
-  const [exutePost, setExuteData] = useState();
-  const [exuteId, setExuteId] = useState<any>();
-
-console.log(empData);
+  const [exutePost, setExutePost] = useState();
+  const [executeData, setExuteData] = useState<any>();
+  const [exuteId, setExuteId] = useState();
+  const [dataIsLoading, setDataIsLoading] = useState<boolean>();
+  //Output
+  const [value, setValue] = useState('');
 
   // delete function is running
   const handleDelete = (id: string) => {
@@ -129,37 +132,39 @@ console.log(empData);
         console.log("Error saving data:", error);
       });
   };
-//Exute Data
-const onExuteDataFinish = (values: any) => {
-  const payload = {
-    name: values.name,
-    objectId: exuteId
+  // Exute Data
+  const onExecuteDataFinish = (values: any) => {
+    console.log(values);
+    const payload = {
+      firstname: values.Firstname, // Update with the actual field name in the form
+      objectId: exuteId,
+      passportnumber: values.Passportnumber,
+      lastname: values.Lastname
+    };
+
+    fetch(`${Urls}/Transforms/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          throw new Error('Failed to save data.');
+        }
+      })
+      .then((data) => {
+        console.log('Data saved successfully:', data);
+        handleCancel(); // Close the modal
+        setExutePost(data);
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.log('Error saving data:', error);
+      });
   };
 
-
-
-  fetch(`${Urls}/Transforms/execute`, {
-    method: 'POST',
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-    .then((res) => {
-      if (res.ok) {
-        return res.json();
-      } else {
-        throw new Error("Failed to save data.");
-      }
-    })
-    .then((data) => {
-      console.log("Data saved successfully:", data);
-      handleCancel(); // Close the modal
-      setExuteData(data);
-      // window.location.reload();
-    })
-    .catch((error) => {
-      console.log("Error saving data:", error);
-    });
-};
   // Get All Transforms
   useEffect(() => {
     fetch(`${Urls}/Transforms/all`)
@@ -227,27 +232,45 @@ const onExuteDataFinish = (values: any) => {
       key: 'Edit',
       render: (text: any, record: any) => (
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button className="edit__icons" onClick={()=>showExutedata(record.objectTypeId)}>
+          <button className="edit__icons" onClick={() => showExutedata(record.objectTypeId)}>
             <CaretRightOutlined style={{ color: 'blue', fontSize: "30px" }} />
           </button>
           <Modal title="Exucute Transform" open={exutePostData} onOk={handleExuteDataOk} onCancel={handleExuteCancel}>
             <Form
-              name="basic"
+              name="ExucuteTransform"
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 16 }}
               style={{ maxWidth: 600 }}
-              initialValues={{ remember: true }}
-              onFinish={onExuteDataFinish}
+              onFinish={onExecuteDataFinish}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
             >
-              <Form.Item
-                name="name"
-                rules={[{ required: true, message: 'Please input your username!' }]}
-              >
-                <Input placeholder='Name' style={{ width: '150%' }} />
-              </Form.Item>
-              <h5 style={{ fontFamily: 'Roboto', fontSize: '14px', color: 'red' }}>File Name can be without file extension . File name is case sensitive</h5>
+              {
+                dataIsLoading ?
+                  <Spin size='large' />
+                  :
+                  executeData && executeData.map((d: any, index: number) => {
+                    return (
+                      <Form.Item
+                        key={index}
+                        name={d.name}
+                        // label={d.name}
+                        rules={[{ required: true, message: 'Please input your username!' }]}
+                      >
+                        <Input placeholder={d.name} style={{ width: '150%' }}
+                          // type={d.dataType === 'String' ? 'text' : d.dataType === 'Number' ? 'number' : 'text'}
+                          type='text'
+                        />
+                      </Form.Item>
+                    )
+                  })
+              }
+              <TextArea
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder="Output"
+                autoSize={{ minRows: 8, maxRows: 9 }}
+              />
               <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                 <Button type="primary" htmlType="submit" style={{ position: 'absolute', right: '0' }}>
                   Exucute
@@ -291,7 +314,7 @@ const onExuteDataFinish = (values: any) => {
                   Edit
                 </Button>
                 <Button type="link" onClick={handleEditCancel} style={{ position: 'absolute', right: '100px', color: 'blue' }}>
-                  Cancel
+                  Cansel
                 </Button>
               </Form.Item>
             </Form>
@@ -328,11 +351,12 @@ const onExuteDataFinish = (values: any) => {
     setIsModalOpen(false);
   };
 
-  const showExutedata = (id:any) => {
-    setExuteId(id)
-    console.log(id);
-    
+  const showExutedata = (id: any) => {
+    setDataIsLoading(true);
     setExutePostData(true)
+    setExuteId(id)
+    fetch(`http://localhost:9020/Object/${id}/property-type`).then(res => res.json()).then(data => setExuteData(data));
+    setDataIsLoading(false);
   }
   const handleExuteDataOk = () => {
     setExutePostData(false);
@@ -340,6 +364,7 @@ const onExuteDataFinish = (values: any) => {
 
   const handleExuteCancel = () => {
     setExutePostData(false);
+    setExuteData(undefined)
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -347,14 +372,9 @@ const onExuteDataFinish = (values: any) => {
   };
 
 
-
-  const handleChange = (value: string, option: any) => {
-    const { key, children } = option;
+  const handleChange = (value: string) => {
     console.log(`selected ${value}`);
-    console.log(`ID: ${key}, Name: ${children}`);
   };
-  
- 
 
 
   return (
@@ -376,7 +396,7 @@ const onExuteDataFinish = (values: any) => {
           </div>
           <Modal title="Create Transform" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
             <Form
-              name="basic"
+              name="Create Transform"
               labelCol={{ span: 8 }}
               wrapperCol={{ span: 16 }}
               style={{ maxWidth: 600 }}
@@ -392,11 +412,11 @@ const onExuteDataFinish = (values: any) => {
                 <Select
                   placeholder='Entity'
                   style={{ width: 470 }}
-                  onChange={(value, option) => handleChange(value, option)}
+                  onChange={handleChange}
                 >
                   {entity &&
                     entity.map((e: any) => (
-                      <Option  key={e.objectId} value={e.name}>
+                      <Option key={e.objectId} value={e.name}>
                         {e.name}
                       </Option>
                     ))}
@@ -427,7 +447,7 @@ const onExuteDataFinish = (values: any) => {
                   Submit
                 </Button>
                 <Button type="link" onClick={handleCancel} htmlType="submit" style={{ position: 'absolute', right: '100px', color: 'blue' }}>
-                  Cancel
+                  Cansel
                 </Button>
               </Form.Item>
             </Form>
